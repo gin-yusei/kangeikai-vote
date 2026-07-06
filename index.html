@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🎉 歓迎会どこ行く？総選挙 🎉</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --izakaya: #f97316;
+    --izakaya-bg: #fff7ed;
+    --yakiniku: #dc2626;
+    --yakiniku-bg: #fef2f2;
+    --sakana: #2563eb;
+    --sakana-bg: #eff6ff;
+    --ink: #1f2937;
+    --sub: #6b7280;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(160deg, #fef3c7 0%, #ffe4e6 50%, #fce7f3 100%);
+    color: var(--ink);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    width: 100%;
+    max-width: 480px;
+    padding: 24px 20px 40px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  .screen.active { display: flex; }
+
+  /* ===== 画面A: スタート ===== */
+  #screen-start { justify-content: center; text-align: center; gap: 28px; min-height: 100dvh; }
+
+  .start-lanterns { font-size: 40px; letter-spacing: 8px; animation: sway 2.5s ease-in-out infinite; }
+  @keyframes sway {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.4;
+    background: linear-gradient(90deg, #dc2626, #f97316, #dc2626);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .start-desc { font-size: 15px; color: var(--sub); line-height: 1.8; }
+
+  .name-box { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .name-box label { font-size: 14px; font-weight: 700; }
+  #name-input {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px 16px;
+    border: 2px solid #fbbf24;
+    border-radius: 14px;
+    background: #fff;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+  }
+  #name-input:focus { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, .15); }
+
+  .btn-primary {
+    width: 100%;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: inherit;
+    padding: 16px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f97316, #dc2626);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, .3);
+    transition: transform .12s ease;
+  }
+  .btn-primary:active { transform: scale(.96); }
+
+  .start-error { font-size: 13px; color: #dc2626; font-weight: 700; min-height: 1.4em; }
+
+  /* ===== 画面B: 投票 ===== */
+  #screen-vote { justify-content: flex-start; gap: 16px; min-height: 100dvh; padding-top: max(24px, env(safe-area-inset-top)); }
+
+  .vote-header { width: 100%; text-align: center; display: flex; flex-direction: column; gap: 8px; }
+  .vote-voter { font-size: 13px; color: var(--sub); font-weight: 700; }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, .8);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    border-radius: 999px;
+    transition: width .35s ease;
+  }
+  .progress-label { font-size: 14px; font-weight: 800; color: #b45309; }
+
+  .card-stage {
+    width: 100%;
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+  }
+
+  .card {
+    position: absolute;
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    border-top: 8px solid var(--card-color, #f97316);
+  }
+  .card.behind { transform: scale(.93) translateY(14px); opacity: .5; pointer-events: none; }
+
+  .card.fly-right { animation: flyRight .45s ease-in forwards; }
+  .card.fly-left { animation: flyLeft .45s ease-in forwards; }
+  .card.fly-up { animation: flyUp .45s ease-in forwards; }
+  @keyframes flyRight {
+    to { transform: translateX(120vw) rotate(25deg); opacity: 0; }
+  }
+  @keyframes flyLeft {
+    to { transform: translateX(-120vw) rotate(-25deg); opacity: 0; }
+  }
+  @keyframes flyUp {
+    to { transform: translateY(-120vh) rotate(8deg) scale(1.05); opacity: 0; }
+  }
+  .card.enter { animation: cardEnter .35s ease-out; }
+  @keyframes cardEnter {
+    from { transform: scale(.93) translateY(14px); opacity: .5; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .badge {
+    font-size: 14px;
+    font-weight: 800;
+    padding: 6px 16px;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--card-color, #f97316);
+  }
+
+  .card-catch {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.45;
+    color: var(--ink);
+    padding: 6px 0;
+    position: relative;
+  }
+  .card-catch::before { content: "“"; color: var(--card-color); margin-right: 2px; }
+  .card-catch::after { content: "”"; color: var(--card-color); margin-left: 2px; }
+
+  .card-name { font-size: 16px; font-weight: 700; color: var(--sub); }
+
+  .tiktok-btn {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+    transition: transform .12s ease;
+  }
+  .tiktok-btn:active { transform: scale(.95); }
+
+  .vote-actions {
+    width: 100%;
+    max-width: 400px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .vote-btn {
+    font-family: inherit;
+    border: none;
+    border-radius: 18px;
+    padding: 14px 6px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-weight: 800;
+    transition: transform .12s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .1);
+  }
+  .vote-btn:active { transform: scale(.92); }
+  .vote-btn .icon { font-size: 26px; }
+  .vote-btn .label { font-size: 12.5px; }
+  .vote-btn.pass { background: #f3f4f6; color: #6b7280; }
+  .vote-btn.ok { background: #ecfdf5; color: #059669; border: 2px solid #6ee7b7; }
+  .vote-btn.love { background: linear-gradient(135deg, #f97316, #dc2626); color: #fff; }
+
+  /* ===== 画面C: 結果 ===== */
+  #screen-result { justify-content: flex-start; gap: 20px; text-align: center; min-height: 100dvh; }
+
+  .result-title { font-size: 26px; font-weight: 800; margin-top: 12px; }
+  .result-sub { font-size: 14px; color: var(--sub); }
+
+  .result-panel {
+    width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px 18px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+  }
+  .result-group-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .result-items { display: flex; flex-wrap: wrap; gap: 8px; }
+  .result-chip {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+  }
+  .result-chip.love { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
+  .result-chip.ok { background: #ecfdf5; border-color: #6ee7b7; color: #047857; }
+  .result-chip.pass { color: #9ca3af; }
+  .result-empty { font-size: 13px; color: #9ca3af; }
+
+  .rank-list { display: flex; flex-direction: column; gap: 10px; }
+  .rank-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(90deg, #fff7ed, #fff);
+    border: 2px solid #fdba74;
+    border-radius: 16px;
+    padding: 12px 14px;
+  }
+  .rank-medal { font-size: 24px; }
+  .rank-name { font-size: 17px; font-weight: 800; }
+  .rank-catch { font-size: 12px; color: var(--sub); }
+
+  .copy-btn {
+    width: 100%;
+    font-size: 17px;
+    font-weight: 800;
+    font-family: inherit;
+    padding: 16px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #059669, #10b981);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(5, 150, 105, .3);
+    transition: transform .12s ease;
+  }
+  .copy-btn:active { transform: scale(.96); }
+  .copy-btn.copied { background: linear-gradient(90deg, #1f2937, #374151); }
+
+  .copy-hint { font-size: 14px; font-weight: 700; color: #b45309; line-height: 1.7; }
+
+  #fallback-area {
+    display: none;
+    width: 100%;
+    height: 150px;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 12px;
+    border-radius: 14px;
+    border: 2px solid #fbbf24;
+    resize: none;
+  }
+
+  .retry-btn {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 12px 28px;
+    border-radius: 999px;
+    border: 2px solid #d1d5db;
+    background: transparent;
+    color: var(--sub);
+    cursor: pointer;
+  }
+
+  /* ===== 紙吹雪 ===== */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 999;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: .8; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 画面A: スタート ===== -->
+<section id="screen-start" class="screen active">
+  <div class="start-lanterns">🏮🏮🏮</div>
+  <h1 class="start-title">🎉 歓迎会どこ行く？<br>総選挙 🎉</h1>
+  <p class="start-desc">候補は全8店舗！<br>1店ずつサクサク評価して、<br>行きたいお店を教えてね 🍻</p>
+  <div class="name-box">
+    <label for="name-input">あなたの名前（ニックネームOK）</label>
+    <input id="name-input" type="text" placeholder="例）きたがわ" maxlength="20" autocomplete="off">
+    <p class="start-error" id="start-error"></p>
+    <button class="btn-primary" id="start-btn">投票をはじめる 🚀</button>
+  </div>
+</section>
+
+<!-- ===== 画面B: 投票 ===== -->
+<section id="screen-vote" class="screen">
+  <div class="vote-header">
+    <p class="vote-voter" id="vote-voter"></p>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <p class="progress-label" id="progress-label"></p>
+  </div>
+  <div class="card-stage" id="card-stage"></div>
+  <div class="vote-actions">
+    <button class="vote-btn pass" data-score="0">
+      <span class="icon">🙅</span><span class="label">今回はパス</span>
+    </button>
+    <button class="vote-btn ok" data-score="1">
+      <span class="icon">🙆</span><span class="label">アリ</span>
+    </button>
+    <button class="vote-btn love" data-score="2">
+      <span class="icon">🔥</span><span class="label">行きたい！</span>
+    </button>
+  </div>
+</section>
+
+<!-- ===== 画面C: 結果 ===== -->
+<section id="screen-result" class="screen">
+  <h2 class="result-title">🏆 投票完了！</h2>
+  <p class="result-sub" id="result-voter"></p>
+
+  <div class="result-panel" id="rank-panel">
+    <p class="result-group-title">🔥 あなたの「行きたい！」</p>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <div class="result-panel">
+    <div>
+      <p class="result-group-title">🙆 アリ</p>
+      <div class="result-items" id="ok-list"></div>
+    </div>
+    <div>
+      <p class="result-group-title">🙅 今回はパス</p>
+      <div class="result-items" id="pass-list"></div>
+    </div>
+  </div>
+
+  <button class="copy-btn" id="copy-btn">📋 結果をコピー</button>
+  <textarea id="fallback-area" readonly></textarea>
+  <p class="copy-hint">コピーしたテキストを<br>グループチャットに貼ってね！ 💬</p>
+
+  <button class="retry-btn" id="retry-btn">🔄 もう一回投票する</button>
+</section>
+
+<script>
+// ================================================================
+// 候補店データ（幹事はここを書き換えてください）
+// category: "居酒屋" / "焼肉" / "魚" のいずれか
+// ================================================================
+const RESTAURANTS = [
+  { id: 1, category: "居酒屋", name: "電雷",
+    catch: "とりあえず、食べ飲みほ",
+    url: "https://vt.tiktok.com/ZSCqDbrL1/" },
+  { id: 2, category: "居酒屋", name: "立ち呑み8 大井町",
+    catch: "おしゃれな皆さんへ",
+    url: "https://vt.tiktok.com/ZSCqUjYGX/" },
+  { id: 3, category: "居酒屋", name: "(店名不明・要確認)",
+    catch: "ブラッドピットが来たらしい",
+    url: "https://vt.tiktok.com/ZSCqUhUAT/" },
+  { id: 4, category: "焼肉", name: "金肉屋",
+    catch: "筋トレしている皆さんへ",
+    url: "https://vt.tiktok.com/ZSCqy1X7t/" },
+  { id: 5, category: "焼肉", name: "銭場精肉店",
+    catch: "なかなか良き",
+    url: "https://vt.tiktok.com/ZSCqyLLmo/" },
+  { id: 6, category: "焼肉", name: "29テラス",
+    catch: "タン好きさんへ",
+    url: "https://vt.tiktok.com/ZSCqyTXwN/" },
+  { id: 7, category: "魚", name: "魚義",
+    catch: "魚派の方へ",
+    url: "https://vt.tiktok.com/ZSCqf9Jfj/" },
+  { id: 8, category: "魚", name: "廻鮮寿司 塩釜港",
+    catch: "シンプルに近くのトラックス",
+    url: "https://vt.tiktok.com/ZSCqfse8p/" },
+];
+// ================================================================
+
+const CATEGORY_STYLE = {
+  "居酒屋": { emoji: "🍶", color: "var(--izakaya)" },
+  "焼肉":   { emoji: "🥩", color: "var(--yakiniku)" },
+  "魚":     { emoji: "🐟", color: "var(--sakana)" },
+};
+
+// 状態（メモリ上のみ。リロードで初期化される）
+let voterName = "";
+let currentIndex = 0;
+let votes = {}; // { restaurantId: 0 | 1 | 2 }
+let animating = false;
+
+const $ = (id) => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// ===== 画面A =====
+$("start-btn").addEventListener("click", () => {
+  const name = $("name-input").value.trim();
+  if (!name) {
+    $("start-error").textContent = "名前を入れてね！";
+    $("name-input").focus();
+    return;
+  }
+  voterName = name;
+  currentIndex = 0;
+  votes = {};
+  $("vote-voter").textContent = `${voterName} さんの投票`;
+  renderStage();
+  showScreen("screen-vote");
+});
+$("name-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("start-btn").click();
+});
+
+// ===== 画面B =====
+function buildCard(r, isBehind) {
+  const style = CATEGORY_STYLE[r.category] || { emoji: "🍽", color: "var(--izakaya)" };
+  const card = document.createElement("div");
+  card.className = "card" + (isBehind ? " behind" : "");
+  card.style.setProperty("--card-color", style.color);
+  card.innerHTML = `
+    <span class="badge">${style.emoji} ${r.category}</span>
+    <p class="card-catch">${escapeHtml(r.catch)}</p>
+    <p class="card-name">${escapeHtml(r.name)}</p>
+    <button class="tiktok-btn">🎬 TikTokで見る</button>
+  `;
+  card.querySelector(".tiktok-btn").addEventListener("click", () => {
+    window.open(r.url, "_blank", "noopener");
+  });
+  return card;
+}
+
+function renderStage() {
+  const stage = $("card-stage");
+  stage.innerHTML = "";
+  // 次のカードを後ろに敷いておく
+  if (currentIndex + 1 < RESTAURANTS.length) {
+    stage.appendChild(buildCard(RESTAURANTS[currentIndex + 1], true));
+  }
+  const front = buildCard(RESTAURANTS[currentIndex], false);
+  front.classList.add("enter");
+  stage.appendChild(front);
+
+  $("progress-label").textContent = `${currentIndex + 1} / ${RESTAURANTS.length} 店目`;
+  $("progress-fill").style.width = `${(currentIndex / RESTAURANTS.length) * 100}%`;
+}
+
+document.querySelectorAll(".vote-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (animating) return;
+    animating = true;
+
+    const score = Number(btn.dataset.score);
+    votes[RESTAURANTS[currentIndex].id] = score;
+
+    if (score === 2) burstConfetti();
+
+    const stage = $("card-stage");
+    const front = stage.lastElementChild;
+    front.classList.remove("enter");
+    front.classList.add(score === 2 ? "fly-up" : score === 1 ? "fly-right" : "fly-left");
+    $("progress-fill").style.width = `${((currentIndex + 1) / RESTAURANTS.length) * 100}%`;
+
+    setTimeout(() => {
+      animating = false;
+      currentIndex++;
+      if (currentIndex >= RESTAURANTS.length) {
+        renderResult();
+        showScreen("screen-result");
+      } else {
+        renderStage();
+      }
+    }, 420);
+  });
+});
+
+// ===== 画面C =====
+function groupByScore(score) {
+  return RESTAURANTS.filter(r => votes[r.id] === score);
+}
+
+function renderResult() {
+  $("result-voter").textContent = `${voterName} さんの結果はこちら！`;
+
+  const loves = groupByScore(2);
+  const oks = groupByScore(1);
+  const passes = groupByScore(0);
+
+  const medals = ["🥇", "🥈", "🥉"];
+  const rankList = $("rank-list");
+  rankList.innerHTML = "";
+  if (loves.length === 0) {
+    rankList.innerHTML = `<p class="result-empty">「行きたい！」なし…全部パスとは辛口！😇</p>`;
+  } else {
+    loves.forEach((r, i) => {
+      const style = CATEGORY_STYLE[r.category] || { emoji: "🍽" };
+      const row = document.createElement("div");
+      row.className = "rank-row";
+      row.innerHTML = `
+        <span class="rank-medal">${medals[i] || "🔥"}</span>
+        <div>
+          <p class="rank-name">${style.emoji} ${escapeHtml(r.name)}</p>
+          <p class="rank-catch">${escapeHtml(r.catch)}</p>
+        </div>
+      `;
+      rankList.appendChild(row);
+    });
+  }
+
+  fillChips("ok-list", oks, "ok");
+  fillChips("pass-list", passes, "pass");
+
+  $("copy-btn").textContent = "📋 結果をコピー";
+  $("copy-btn").classList.remove("copied");
+  $("fallback-area").style.display = "none";
+
+  burstConfetti(30);
+}
+
+function fillChips(elementId, list, cls) {
+  const el = $(elementId);
+  el.innerHTML = "";
+  if (list.length === 0) {
+    el.innerHTML = `<p class="result-empty">なし</p>`;
+    return;
+  }
+  list.forEach(r => {
+    const chip = document.createElement("span");
+    chip.className = `result-chip ${cls}`;
+    chip.textContent = r.name;
+    el.appendChild(chip);
+  });
+}
+
+function buildResultText() {
+  const joinNames = (list) => list.length ? list.map(r => r.name).join(" / ") : "なし";
+  const scoreLine = RESTAURANTS.map(r => `${r.id}:${votes[r.id] ?? "-"}`).join(", ");
+  return [
+    `🍻 ${voterName}さんの投票結果 🍻`,
+    `🔥 行きたい!: ${joinNames(groupByScore(2))}`,
+    `🙆 アリ: ${joinNames(groupByScore(1))}`,
+    `🙅 パス: ${joinNames(groupByScore(0))}`,
+    `(集計用 scores: {${scoreLine}})`,
+  ].join("\n");
+}
+
+$("copy-btn").addEventListener("click", async () => {
+  const text = buildResultText();
+  try {
+    await navigator.clipboard.writeText(text);
+    $("copy-btn").textContent = "✅ コピーしたよ！チャットに貼ってね";
+    $("copy-btn").classList.add("copied");
+  } catch (e) {
+    // クリップボードAPIが使えない環境向けフォールバック
+    const area = $("fallback-area");
+    area.value = text;
+    area.style.display = "block";
+    area.focus();
+    area.select();
+    $("copy-btn").textContent = "⬇️ 下のテキストを長押しでコピーしてね";
+  }
+});
+
+$("retry-btn").addEventListener("click", () => {
+  voterName = "";
+  currentIndex = 0;
+  votes = {};
+  $("name-input").value = "";
+  $("start-error").textContent = "";
+  showScreen("screen-start");
+});
+
+// ===== 紙吹雪 =====
+const CONFETTI_EMOJI = ["🎉", "🎊", "🍻", "✨", "🏮", "🔥"];
+function burstConfetti(count = 14) {
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement("span");
+    piece.className = "confetti";
+    piece.textContent = CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)];
+    piece.style.left = Math.random() * 100 + "vw";
+    piece.style.fontSize = 14 + Math.random() * 16 + "px";
+    piece.style.animationDuration = 1.2 + Math.random() * 1.4 + "s";
+    piece.style.animationDelay = Math.random() * .3 + "s";
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3200);
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+</script>
+</body>
+</html>
