@@ -213,6 +213,20 @@
     -webkit-user-drag: none;
   }
 
+  .map-btn {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 2px solid #2563eb;
+    background: #eff6ff;
+    color: #2563eb;
+    cursor: pointer;
+    transition: transform .12s ease;
+  }
+  .map-btn:active { transform: scale(.95); }
+
   .tiktok-btn {
     font-size: 15px;
     font-weight: 700;
@@ -596,6 +610,7 @@ function buildCard(r, isBehind) {
     ${media}
     <p class="card-catch">${escapeHtml(r.catch)}</p>
     <p class="card-name">${escapeHtml(r.name)}</p>
+    <button class="map-btn">📍 Googleマップで見る</button>
     <span class="stamp stamp-ok">🙆 アリ</span>
     <span class="stamp stamp-pass">🙅 パス</span>
   `;
@@ -603,6 +618,11 @@ function buildCard(r, isBehind) {
   card.querySelector(".card-photo, .tiktok-btn").addEventListener("click", () => {
     if (card.dataset.dragged === "1") return;
     window.open(r.url, "_blank", "noopener");
+  });
+  const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(r.name + " 大井町");
+  card.querySelector(".map-btn").addEventListener("click", () => {
+    if (card.dataset.dragged === "1") return;
+    window.open(mapUrl, "_blank", "noopener");
   });
   return card;
 }
@@ -664,7 +684,7 @@ function enableSwipe(card) {
 
   card.addEventListener("pointerdown", (e) => {
     if (animating || pointerId !== null) return;
-    if (e.target.closest(".tiktok-btn")) return; // ボタンのタップは邪魔しない
+    if (e.target.closest(".tiktok-btn, .map-btn")) return; // ボタンのタップは邪魔しない
     pointerId = e.pointerId;
     startX = e.clientX;
     dx = 0;
