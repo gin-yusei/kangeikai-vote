@@ -203,6 +203,16 @@
 
   .card-name { font-size: 16px; font-weight: 700; color: var(--sub); }
 
+  .card-photo {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #f3f4f6;
+    pointer-events: auto;
+    -webkit-user-drag: none;
+  }
+
   .tiktok-btn {
     font-size: 15px;
     font-weight: 700;
@@ -221,7 +231,7 @@
     width: 100%;
     max-width: 400px;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
@@ -374,12 +384,6 @@
   </div>
   <div class="card-stage" id="card-stage"></div>
   <div class="vote-actions">
-    <button class="vote-btn pass" data-score="0">
-      <span class="icon">🙅</span><span class="label">今回はパス</span>
-    </button>
-    <button class="vote-btn ok" data-score="1">
-      <span class="icon">🙆</span><span class="label">アリ</span>
-    </button>
     <button class="vote-btn love" data-score="2">
       <span class="icon">🔥</span><span class="label">行きたい！</span>
     </button>
@@ -503,6 +507,37 @@ const RESTAURANTS = [
     url: "https://toriichizu.net/shoplist/145/" },
 ];
 // ▲▲ RESTAURANTS-END
+
+// ▼▼ PHOTOS-START（写真取得.pyで自動生成）
+const PHOTOS = {
+  "電雷": "電雷.jpg",
+  "立ち呑み8 大井町": "立ち呑み8大井町.jpg",
+  "金肉屋": "金肉屋.jpg",
+  "銭場精肉店": "銭場精肉店.jpg",
+  "29テラス": "29テラス.jpg",
+  "魚義": "魚義.jpg",
+  "廻鮮寿司 塩釜港": "廻鮮寿司塩釜港.jpg",
+  "神戸びいどろ 大井町店": "神戸びいどろ大井町店.jpg",
+  "大衆ホルモン 肉力屋 大井町西口店": "大衆ホルモン肉力屋大井町西口店.jpg",
+  "大盛苑": "大盛苑.jpg",
+  "いさ美寿司": "いさ美寿司.jpg",
+  "金井寿司": "金井寿司.jpg",
+  "すし京辰 大井町店": "すし京辰大井町店.jpg",
+  "うまい鮨勘 大井町支店": "うまい鮨勘大井町支店.jpg",
+  "ちよだ鮨 アトレ大井町店": "ちよだ鮨アトレ大井町店.jpg",
+  "出世鮨": "出世鮨.jpg",
+  "すし処 有むら": "すし処有むら.jpg",
+  "山田寿司": "山田寿司.jpg",
+  "晩杯屋 大井町店": "晩杯屋大井町店.jpg",
+  "肉のまえかわ": "肉のまえかわ.jpg",
+  "田中家": "田中家.jpg",
+  "麦酒宿 まり花 大井町": "麦酒宿まり花大井町.jpg",
+  "まんぷく食堂": "まんぷく食堂.jpg",
+  "大衆酒場こいさご 大井町本店": "大衆酒場こいさご大井町本店.jpg",
+  "がんばり亭": "がんばり亭.jpg",
+  "とりいちず 大井町西口店": "とりいちず大井町西口店.jpg",
+};
+// ▲▲ PHOTOS-END
 // ================================================================
 
 const CATEGORY_STYLE = {
@@ -552,15 +587,21 @@ function buildCard(r, isBehind) {
   const card = document.createElement("div");
   card.className = "card" + (isBehind ? " behind" : "");
   card.style.setProperty("--card-color", style.color);
+  const photoFile = PHOTOS[r.name];
+  const media = photoFile
+    ? `<img class="card-photo" src="写真/${encodeURIComponent(photoFile)}" alt="${escapeHtml(r.name)}の写真" draggable="false">`
+    : `<button class="tiktok-btn">🎬 動画・詳細を見る</button>`;
   card.innerHTML = `
     <span class="badge">${style.emoji} ${r.category}</span>
+    ${media}
     <p class="card-catch">${escapeHtml(r.catch)}</p>
     <p class="card-name">${escapeHtml(r.name)}</p>
-    <button class="tiktok-btn">🎬 TikTokで見る</button>
     <span class="stamp stamp-ok">🙆 アリ</span>
     <span class="stamp stamp-pass">🙅 パス</span>
   `;
-  card.querySelector(".tiktok-btn").addEventListener("click", () => {
+  // 写真(またはボタン)タップでリンク先を開く。スワイプ直後の誤タップは無視
+  card.querySelector(".card-photo, .tiktok-btn").addEventListener("click", () => {
+    if (card.dataset.dragged === "1") return;
     window.open(r.url, "_blank", "noopener");
   });
   return card;
@@ -627,6 +668,7 @@ function enableSwipe(card) {
     pointerId = e.pointerId;
     startX = e.clientX;
     dx = 0;
+    card.dataset.dragged = "0";
     card.classList.remove("enter");
     card.setPointerCapture(e.pointerId);
   });
@@ -643,6 +685,7 @@ function enableSwipe(card) {
   const onRelease = (e) => {
     if (e.pointerId !== pointerId) return;
     pointerId = null;
+    card.dataset.dragged = Math.abs(dx) > 8 ? "1" : "0";
     if (dx > SWIPE_THRESHOLD) {
       castVote(1);
     } else if (dx < -SWIPE_THRESHOLD) {
